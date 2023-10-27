@@ -40,9 +40,7 @@ public class ChunkService {
         int z = Duration.between(slavePod.getLastPinged() , LocalDateTime.now()).toSecondsPart();
         double o = 2;
         int c = 1;
-        double heuristicValue = a * Math.pow(x , -n) + b * Math.pow(y , m) + c * Math.pow(z , o);
-        log.info("Slave node " + slavePod.getPodName() + " heuristic value = " + heuristicValue);
-        return heuristicValue;
+        return a * Math.pow(x , -n) + b * Math.pow(y , m) + c * Math.pow(z , o);
 
     }
 

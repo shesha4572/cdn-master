@@ -3,7 +3,6 @@ package com.shesha4572.cdnmaster.services;
 
 import com.shesha4572.cdnmaster.entities.Chunk;
 import com.shesha4572.cdnmaster.entities.FileInfo;
-import com.shesha4572.cdnmaster.entities.SlavePod;
 import com.shesha4572.cdnmaster.repositories.ChunkRedisRepository;
 import com.shesha4572.cdnmaster.repositories.FileRedisRepository;
 import com.shesha4572.cdnmaster.repositories.SlavePodRedisRepository;
