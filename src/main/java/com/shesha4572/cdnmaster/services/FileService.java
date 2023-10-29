@@ -62,4 +62,12 @@ public class FileService {
     }
 
 
+    public FileInfo getFileChunks(String fileId) throws RuntimeException{
+        if(fileRedisRepository.existsById(fileId)){
+            return fileRedisRepository.findById(fileId).get();
+        }
+        else {
+            throw new RuntimeException("File doesnt exist");
+        }
+    }
 }
