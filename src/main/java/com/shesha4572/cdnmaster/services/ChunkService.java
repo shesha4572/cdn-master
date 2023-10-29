@@ -35,7 +35,7 @@ public class ChunkService {
             return Double.MIN_VALUE;
         }
         int a = 100;
-        double x = Math.max(slavePod.getEstimatedChunkLoad().doubleValue(), slavePod.getActualChunkLoad().doubleValue()) + 0.0001;
+        double x = Math.max(slavePod.getEstimatedChunkLoad().doubleValue(), slavePod.getActualChunkLoad().doubleValue()) + 0.000001;
         double b = 0.5;
         int y = Duration.between(slavePod.getLastAllocatedTimeStamp(), LocalDateTime.now()).toSecondsPart();
         int n = 2;
@@ -52,7 +52,8 @@ public class ChunkService {
         allPods.sort((pod1, pod2) -> (int) (heuristicValue(pod2) - heuristicValue(pod1)));
         List<SlavePod> chosenPods = allPods.subList(0, replicationFactor);
         ArrayList<String> chosenPodStrings = new ArrayList<>();
-        BigDecimal incrementValue = BigDecimal.valueOf(1 / chunkCapacity).round(new MathContext(2));
+        BigDecimal incrementValue = BigDecimal.valueOf(1.0 / chunkCapacity).round(new MathContext(4));
+        System.out.println(incrementValue);
         chosenPods.forEach(pod -> {
             pod.setEstimatedChunkLoad(pod.getEstimatedChunkLoad().add(incrementValue));
             pod.setLastAllocatedTimeStamp(LocalDateTime.now());

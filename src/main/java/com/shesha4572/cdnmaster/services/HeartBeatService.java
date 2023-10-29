@@ -2,8 +2,10 @@ package com.shesha4572.cdnmaster.services;
 
 
 import com.shesha4572.cdnmaster.entities.Chunk;
+import com.shesha4572.cdnmaster.entities.FileInfo;
 import com.shesha4572.cdnmaster.entities.SlavePod;
 import com.shesha4572.cdnmaster.repositories.ChunkRedisRepository;
+import com.shesha4572.cdnmaster.repositories.FileRedisRepository;
 import com.shesha4572.cdnmaster.repositories.SlavePodRedisRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -19,11 +22,13 @@ public class HeartBeatService {
 
     private final SlavePodRedisRepository slavePodRedisRepository;
     private final ChunkRedisRepository chunkRedisRepository;
+    private final FileRedisRepository fileRedisRepository;
 
     @Autowired
-    public HeartBeatService(SlavePodRedisRepository slavePodRedisRepository, ChunkRedisRepository chunkRedisRepository){
+    public HeartBeatService(SlavePodRedisRepository slavePodRedisRepository, ChunkRedisRepository chunkRedisRepository, FileRedisRepository fileRedisRepository){
         this.slavePodRedisRepository = slavePodRedisRepository;
         this.chunkRedisRepository = chunkRedisRepository;
+        this.fileRedisRepository = fileRedisRepository;
     }
 
     public void heartBeatRegister(String podName , BigDecimal chunkLoad , ArrayList<String> newChunks){
@@ -58,12 +63,24 @@ public class HeartBeatService {
                         replicaList.add(podName);
                         chunk.setReplicaPodList(replicaList);
                         chunkRedisRepository.save(chunk);
+                        FileInfo fileInfo = fileRedisRepository.findById(chunk.getFileId()).get();
+                        ArrayList<Chunk> chunkArrayList = fileInfo.getChunkList();
+                        chunkArrayList.removeIf(chunk1 -> Objects.equals(chunk1.getChunkId(), chunk.getChunkId()));
+                        chunkArrayList.add(chunk);
+                        fileInfo.setChunkList(chunkArrayList);
+                        fileRedisRepository.save(fileInfo);
                     }
                     else if (!chunk.getReplicaPodList().contains(podName)){
                         ArrayList<String> replicaList = chunk.getReplicaPodList();
                         replicaList.add(podName);
                         chunk.setReplicaPodList(replicaList);
                         chunkRedisRepository.save(chunk);
+                        FileInfo fileInfo = fileRedisRepository.findById(chunk.getFileId()).get();
+                        ArrayList<Chunk> chunkArrayList = fileInfo.getChunkList();
+                        chunkArrayList.removeIf(chunk1 -> Objects.equals(chunk1.getChunkId(), chunk.getChunkId()));
+                        chunkArrayList.add(chunk);
+                        fileInfo.setChunkList(chunkArrayList);
+                        fileRedisRepository.save(fileInfo);
                     }
                 }
         );
