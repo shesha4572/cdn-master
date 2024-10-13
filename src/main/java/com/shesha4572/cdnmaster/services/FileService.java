@@ -49,7 +49,7 @@ public class FileService {
                     .chunkIndex(i)
                     .fileId(file.getFileId())
                     .build();
-            ArrayList<String> chosenPods = chunkService.pickSlaveNode();
+            ArrayList<String> chosenPods = chunkService.pickSlaveNode(file);
             chosenPods.add(0 , chunk.getChunkId());
             chunkAllocations.add(chosenPods);
             chunkArrayList.add(chunk);

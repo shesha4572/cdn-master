@@ -1,6 +1,7 @@
 package com.shesha4572.cdnmaster.services;
 
 
+import com.shesha4572.cdnmaster.entities.FileInfo;
 import com.shesha4572.cdnmaster.entities.SlavePod;
 import com.shesha4572.cdnmaster.repositories.SlavePodRedisRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -20,13 +21,12 @@ public class ChunkService {
 
     private final SlavePodRedisRepository slavePodRedisRepository;
     private final int replicationFactor;
-    private final int chunkCapacity;
+    private final long targetOccupancyBytes = (long) (Long.parseLong(System.getenv("STORAGE_BYTES")) * Float.parseFloat(System.getenv("STORAGE_OCCUPANCY_TARGET")));
 
     @Autowired
     public ChunkService(SlavePodRedisRepository slavePodRedisRepository) {
         this.slavePodRedisRepository = slavePodRedisRepository;
         this.replicationFactor = Integer.parseInt(System.getenv("REPLICATION_FACTOR"));
-        this.chunkCapacity = Integer.parseInt(System.getenv("CHUNK_CAPACITY"));
     }
 
     public double heuristicValue(SlavePod slavePod) {
@@ -47,13 +47,12 @@ public class ChunkService {
 
     }
 
-    public ArrayList<String> pickSlaveNode() {
+    public ArrayList<String> pickSlaveNode(FileInfo fileInfo) {
         ArrayList<SlavePod> allPods = (ArrayList<SlavePod>) slavePodRedisRepository.findAll();
         allPods.sort((pod1, pod2) -> (int) (heuristicValue(pod2) - heuristicValue(pod1)));
         List<SlavePod> chosenPods = allPods.subList(0, replicationFactor);
         ArrayList<String> chosenPodStrings = new ArrayList<>();
-        BigDecimal incrementValue = BigDecimal.valueOf(1.0 / chunkCapacity).round(new MathContext(4));
-        System.out.println(incrementValue);
+        BigDecimal incrementValue = BigDecimal.valueOf(fileInfo.getSize() / targetOccupancyBytes).round(new MathContext(10));
         chosenPods.forEach(pod -> {
             pod.setEstimatedChunkLoad(pod.getEstimatedChunkLoad().add(incrementValue));
             pod.setLastAllocatedTimeStamp(LocalDateTime.now());
